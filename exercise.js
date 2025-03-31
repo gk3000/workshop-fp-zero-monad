@@ -10,7 +10,11 @@ runTests(defineApp);
 function defineApp() {
 	return IO.doEither(function *myapp(env){
 		try {
-			// TODO: implement per requirements
+			var { email, password } = yield validateInput();
+
+			yield submitRegistration(email,password);
+
+			return displaySuccess(email);
 		}
 		catch (err) {
 			return displayError(err);
@@ -23,6 +27,7 @@ function defineApp() {
 function validateInput() {
 	return IO.doEither(function *validator(){
 		var email = yield getElementValueById("email");
+		var password = yield getElementValueById("password");
 
 		// validate email
 		email = yield (yield email.fold(
@@ -34,9 +39,17 @@ function validateInput() {
 			)
 		));
 
-		// TODO: implement per requirements
+		// validate password
+		password = yield (yield password.fold(
+			() => Either.Left("Password missing."),
+			password => (
+				password.length < 12 ?
+					Either.Left("Password insufficient.") :
+					Either.Right(password)
+			)
+		));
 
-		return Either.Right({ email });
+		return Either.Right({ email, password });
 	});
 }
 
